@@ -27,38 +27,38 @@ ratings_raw <- read.csv(paste(path, "BX-CSV-Dump/BX-Book-Ratings.csv", sep = "/"
 # usunięcie rekordów zawierających oceny (binarne) zebrane w sposób pośredni
 ratings_raw <- ratings_raw[(ratings_raw$Book.Rating != 0), ]
 
-# filtracja identyfikatorów użytkowników kórzy mają ocenione  co najmniej min_nr_of_ratings książek
-user_ids <- as.data.frame(table(ratings_raw$User.ID)) %>% filter(as.numeric(Freq) >= min_nr_of_ratings)
-user_ids <- user_ids[, 1]
-user_ids_length <- length(user_ids) # user_ids zawiera wartości unikalne
+# filtracja rekordów w których użytkownicy mają ocenione co najmniej min_nr_of_ratings książek
+unique_user_ids <- as.data.frame(table(ratings_raw$User.ID)) %>% filter(as.numeric(Freq) >= min_nr_of_ratings)
+unique_user_ids <- unique_user_ids[, 1]
+unique_user_ids_length <- length(unique_user_ids) # unique_user_ids zawiera wartości unikalne
 
 # losowanie bez zwracania nr_of_users_to_choose użytkowników
-samples <- sample(1:user_ids_length, nr_of_users_to_choose, replace = FALSE) # samples zawiera indeksy
-choosed_user_ids <- user_ids[samples] # choosed_user_ids zawiera wybrane wartości unikalne ID użytkowników
-ratings <- ratings_raw[ratings_raw$User.ID %in% choosed_user_ids, ]
+samples <- sample(1:unique_user_ids_length, nr_of_users_to_choose, replace = FALSE) # samples zawiera indeksy
+unique_choosed_user_ids <- unique_user_ids[samples] # choosed_user_ids zawiera wybrane wartości unikalne ID użytkowników
+ratings <- ratings_raw[ratings_raw$User.ID %in% unique_choosed_user_ids, ]
 
 # lista zawierająca unikalne wartości user.ID oraz odpowiadające im nowe ID 1, 2, ... user_ids_length
-users <- list(choosed_user_ids, seq.int(user_ids_length))
+unique_users <- list(unique_choosed_user_ids, seq.int(unique_user_ids_length))
 
-# inicjalizacja wektora o rozmiarze ratings$User.ID zerami
-new_user_ids <- rep(0, length(ratings$User.ID))
+# inicjalizacja wektora nowych id użytkowników o rozmiarze nrow(ratings) zerami
+new_user_ids <- rep(0, nrow(ratings))
 
 # wyznaczenie unikalnych ISBN
-books <- unique(ratings$ISBN)
+unique_book_ids <- unique(ratings$ISBN)
 
-# lista zawierająca unikalne wartości ISBN oraz odpowiadające im nowe ISBN 1, 2, ... length(books)
-books <- list(books, seq.int(length(books)))
+# lista zawierająca unikalne wartości ISBN oraz odpowiadające im nowe ISBN 1, 2, ... length(unique_book_ids)
+unique_books <- list(unique_book_ids, seq.int(length(unique_book_ids)))
 
-# inicjalizacja wektora o rozmiarze ratings$User.ID zerami
-new_book_ids <- rep(0, length(ratings$User.ID))
+# inicjalizacja wektora nowych id użytkowników o rozmiarze nrow(ratings) zerami
+new_book_ids <- rep(0, nrow(ratings))
 
 # przydzielanie nowych ID oraz ISBN wszystkim użytkownikom i książkom
 # za wolno ?
 for(i in 1:length(ratings$User.ID)){
-  user_index = which(users[[1]] == ratings$User.ID[i])
-  new_user_ids[i] <- users[[2]][[user_index]]
-  book_index = which(books[[1]] == ratings$ISBN[i])
-  new_book_ids[i] <- books[[2]][[book_index]]
+  user_index = which(unique_users[[1]] == ratings$User.ID[i])
+  new_user_ids[i] <- unique_users[[2]][[user_index]]
+  book_index = which(unique_books[[1]] == ratings$ISBN[i])
+  new_book_ids[i] <- unique_books[[2]][[book_index]]
 }
 
 # przypisanie nowych ID użytkowników i książek do ratings
@@ -77,7 +77,7 @@ ratings_object <- new("realRatingMatrix", data = ratings_sparse)
 image(ratings_object, main = "Rozkład ocen")
 
 # histogram liczba ocen - liczba użytkowników którzy wystawili taką liczbę ocen
-histogram(rowCounts(ratings_object), 
+hist(rowCounts(ratings_object), 
           main = "Histogram liczba ocen - liczba użytkwoników",
           col = "darkslategray4", 
           border = "red", 
@@ -85,21 +85,19 @@ histogram(rowCounts(ratings_object),
           ylab = "liczba użytkowników",
           xlim = c(min_nr_of_ratings - 0.5, 300),
           ylim = c(0, 20),
-          breaks = (min_nr_of_ratings - 0.5):(300 + 0.5),
-          scales = list(x = list(at = seq(min_nr_of_ratings, 300, 50)))
+          breaks = (min_nr_of_ratings - 0.5):(300 + 0.5)
 )
 
 # histogram liczba ocen - liczba książek, które mają wystawioną taką liczbę ocen
-histogram(rowCounts(ratings_object), 
+hist(colCounts(ratings_object), 
           main = "Histogram liczba ocen - liczba książek",
           col = "darkslategray4", 
           border = "red", 
           xlab = "liczba ocen",
           ylab = "liczba książek",
-          xlim = c(1 - 0.5, 300),
-          ylim = c(0, 20),
-          breaks = (1 - 0.5):(300 + 0.5), 
-          scales = list(x = list(at = seq(1, 300, 50)))
+          xlim = c(1 - 0.5, 6),
+          ylim = c(0, 2500),
+          breaks = (1 - 0.5):(5 + 0.5), 
 )
 
 # histogram rozkładu ocen
@@ -160,7 +158,7 @@ test <- subset(normalized_ratings_object, sample == FALSE)
 # metryki podobieństwa - "Cosine", "pearson"
 # method = "split", train = 0.9
 # method = "cross", k = 3
-scheme <- evaluationScheme(train, method = "cross", k = 3, given = -1)
+scheme <- evaluationScheme(train, method = "cross", k = 5, given = -1)
 algorithms <- list(
   "UBCF" = list(name = "UBCF", param = list(method = "Cosine", nn = 25, normalize = NULL)),
   # "IBCF" = list(name = "IBCF", param = list(method = "Cosine", k = 25, normalize = NULL)),
@@ -168,35 +166,3 @@ algorithms <- list(
 )
 history <- recommenderlab::evaluate(scheme, algorithms, type = "ratings")
 # history$UBCF@results[[1]]@cm[[1]] - RMSE
-
-
-# ratings_model <- Recommender(recommenderlab::getData(scheme, "train"), method = "UBCF", param = list(method = "Cosine", nn = 15))
-# pred <- predict(ratings_model, recommenderlab::getData(scheme, "known"), type = "ratings")
-# UBCF <- calcPredictionAccuracy(pred, recommenderlab::getData(scheme, "unknown"))
-
-
-
-
-
-
-
-# folds <- kfold(1:nrow(train), k = kfolds)
-# folds_length <- length(folds)
-
-# for(i in 1:kfolds){
-#     test_indexes <- numeric(0)
-#     train_indexes <- numeric(0)
-#     lapply(1:folds_length, function(j){
-#     if(folds[j] != i){
-#       train_indexes <<- c(train_indexes, j)
-#     }else{
-#       test_indexes <<- c(test_indexes, j)
-#     }
-#     })
-#     train_folds <- train[train_indexes, ]
-#     test_folds <- train[test_indexes, ]
-# 
-#     model <- Recommender(train_folds, method = "UBCF", param = list(method = "Cosine", nn = 15))
-#     pred_ub <- predict(model, test_folds, type="ratings")
-#     print(calcPredictionAccuracy(pred_ub, test))
-# }
