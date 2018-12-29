@@ -85,7 +85,7 @@ histogram(rowCounts(ratings_object),
           ylab = "liczba użytkowników",
           xlim = c(min_nr_of_ratings - 0.5, 300),
           ylim = c(0, 20),
-          # breaks = (min_nr_of_ratings - 0.5):(300 + 0.5), 
+          breaks = (min_nr_of_ratings - 0.5):(300 + 0.5),
           scales = list(x = list(at = seq(min_nr_of_ratings, 300, 50)))
 )
 
