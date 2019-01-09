@@ -15,7 +15,7 @@ library(dplyr)
 min_nr_of_ratings <- 5
 
 # liczba użytkowników przeznaczonych do badań
-nr_of_users_to_choose <- 100
+nr_of_users_to_choose <- 1000
 
 # ustawienie ziarna generatora liczb pseudolosowych
 seed_ <- 1648
@@ -37,33 +37,9 @@ samples <- sample(1:unique_user_ids_length, nr_of_users_to_choose, replace = FAL
 unique_choosed_user_ids <- unique_user_ids[samples] # choosed_user_ids zawiera wybrane wartości unikalne ID użytkowników
 ratings <- ratings_raw[ratings_raw$User.ID %in% unique_choosed_user_ids, ]
 
-# lista zawierająca unikalne wartości user.ID oraz odpowiadające im nowe ID 1, 2, ... user_ids_length
-unique_users <- list(unique_choosed_user_ids, seq.int(unique_user_ids_length))
-
-# inicjalizacja wektora nowych id użytkowników o rozmiarze nrow(ratings) zerami
-new_user_ids <- rep(0, nrow(ratings))
-
-# wyznaczenie unikalnych ISBN
-unique_book_ids <- unique(ratings$ISBN)
-
-# lista zawierająca unikalne wartości ISBN oraz odpowiadające im nowe ISBN 1, 2, ... length(unique_book_ids)
-unique_books <- list(unique_book_ids, seq.int(length(unique_book_ids)))
-
-# inicjalizacja wektora nowych id użytkowników o rozmiarze nrow(ratings) zerami
-new_book_ids <- rep(0, nrow(ratings))
-
-# przydzielanie nowych ID oraz ISBN wszystkim użytkownikom i książkom
-# za wolno ?
-for(i in 1:length(ratings$User.ID)){
-  user_index = which(unique_users[[1]] == ratings$User.ID[i])
-  new_user_ids[i] <- unique_users[[2]][[user_index]]
-  book_index = which(unique_books[[1]] == ratings$ISBN[i])
-  new_book_ids[i] <- unique_books[[2]][[book_index]]
-}
-
 # przypisanie nowych ID użytkowników i książek do ratings
-ratings$New.User.ID <- new_user_ids
-ratings$New.Book.ID <- new_book_ids
+ratings$New.User.ID <- group_indices(ratings, User.ID)
+ratings$New.Book.ID <- group_indices(ratings, ISBN)
 
 # utworzenie macierzy żadkiej
 ratings_sparse = sparseMatrix(as.integer(ratings$New.User.ID), as.integer(ratings$New.Book.ID), x = ratings$Book.Rating)
@@ -77,27 +53,25 @@ ratings_object <- new("realRatingMatrix", data = ratings_sparse)
 image(ratings_object, main = "Rozkład ocen")
 
 # histogram liczba ocen - liczba użytkowników którzy wystawili taką liczbę ocen
-hist(rowCounts(ratings_object), 
+row_counts <- rowCounts(ratings_object)
+hist(row_counts, 
           main = "Histogram liczba ocen - liczba użytkwoników",
           col = "darkslategray4", 
           border = "red", 
           xlab = "liczba ocen",
           ylab = "liczba użytkowników",
-          xlim = c(min_nr_of_ratings - 0.5, 300),
-          ylim = c(0, 20),
-          breaks = (min_nr_of_ratings - 0.5):(300 + 0.5)
+          breaks = seq(min_nr_of_ratings - 1, max(row_counts) + 1, by = 10)
 )
 
 # histogram liczba ocen - liczba książek, które mają wystawioną taką liczbę ocen
-hist(colCounts(ratings_object), 
+column_counts <- colCounts(ratings_object)
+hist(column_counts, 
           main = "Histogram liczba ocen - liczba książek",
           col = "darkslategray4", 
           border = "red", 
           xlab = "liczba ocen",
           ylab = "liczba książek",
-          xlim = c(1 - 0.5, 6),
-          ylim = c(0, 2500),
-          breaks = (1 - 0.5):(5 + 0.5), 
+          breaks = seq(1, max(column_counts) + 1, by = 1)
 )
 
 # histogram rozkładu ocen
@@ -120,7 +94,7 @@ histogram(getRatings(ratings_object),
 # podstawowe statystyki
 summary(getRatings(ratings_object))
 
-# normalizacja danych -  "center", "Z-score"
+# normalizacja danych - "center", "Z-score"
 normalized_ratings_object <- normalize(ratings_object, method = "center", row = TRUE)
 r <- getRatings(normalized_ratings_object)
 x <- seq(min(r), max(r), length = 50) 
