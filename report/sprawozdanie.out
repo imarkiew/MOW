@@ -1,0 +1,16 @@
+\BOOKMARK [1][-]{section.1}{Założenia}{}% 1
+\BOOKMARK [1][-]{section.2}{Badania}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Wstępna analiza danych}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Optymalizacja\040algorytmu\040User\040Based\040Collaborative\040Filtering}{section.2}% 4
+\BOOKMARK [3][-]{subsubsection.2.2.1}{Testy\040rodzaju\040normalizacji\040danych\040dla\040UBCF}{subsection.2.2}% 5
+\BOOKMARK [3][-]{subsubsection.2.2.2}{Testy metryk podobieństwa dla UBCF}{subsection.2.2}% 6
+\BOOKMARK [3][-]{subsubsection.2.2.3}{Testy dla różnej ilości najbliższych sąsiadów}{subsection.2.2}% 7
+\BOOKMARK [2][-]{subsection.2.3}{Optymalizacja\040algorytmu\040Funk\040SVD}{section.2}% 8
+\BOOKMARK [3][-]{subsubsection.2.3.1}{Testy\040rodzaju\040normalizacji\040danych\040dla\040SVDF}{subsection.2.3}% 9
+\BOOKMARK [3][-]{subsubsection.2.3.2}{Testy dla różnych ilości składowych utajonych SVDF}{subsection.2.3}% 10
+\BOOKMARK [3][-]{subsubsection.2.3.3}{Testy dla różnych współczynników szybkości uczenia SVDF}{subsection.2.3}% 11
+\BOOKMARK [2][-]{subsection.2.4}{Porównanie najlepszych modeli}{section.2}% 12
+\BOOKMARK [2][-]{subsection.2.5}{Binaryzacja\040danych}{section.2}% 13
+\BOOKMARK [2][-]{subsection.2.6}{Proste\040statystyki}{section.2}% 14
+\BOOKMARK [1][-]{section.3}{Uwagi\040i\040wnioski}{}% 15
+\BOOKMARK [1][-]{section.4}{Bibliografia}{}% 16
