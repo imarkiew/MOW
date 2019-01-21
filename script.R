@@ -1,5 +1,6 @@
 # ustawienie domyslnej sciezki do pliku
-path = "/home/igor/Pulpit/GitHub/MOW"
+#path = "/home/igor/Pulpit/GitHub/MOW"
+path = "C:/Users/Aleksander/Desktop/Sem 9/MOW/Projekt"
 setwd(path)
 
 # ladowanie bibliotek
@@ -15,10 +16,10 @@ library(dplyr)
 # wczytywanie i wstepne przetwarzanie danych
 # -----------------------------------------------------------------------------------------------------
 
-# minimalna liczba ocen jaka musi miec u≈ºytkownik ≈ºeby byl uwzgledniony w danych
+# minimalna liczba ocen jaka musi miec uøytkownik øeby byl uwzgledniony w danych
 min_nr_of_ratings <- 5
 
-# liczba uzytkownikow przeznaczonych do bada≈Ñ
+# liczba uzytkownikow przeznaczonych do badaÒ
 nr_of_users_to_choose <- 500
 
 # ustawienie ziarna generatora liczb pseudolosowych
@@ -28,24 +29,24 @@ set.seed(seed_)
 # wczytanie danych
 ratings_raw <- read.csv(paste(path, "BX-CSV-Dump/BX-Book-Ratings.csv", sep = "/"), sep = ";", header = TRUE)
 
-# usuniƒôcie rekord√≥w zawierajƒÖcych oceny (binarne) zebrane w spos√≥b po≈õredni
+# usuniÍcie rekordÛw zawierajπcych oceny (binarne) zebrane w sposÛb poúredni
 ratings_raw <- ratings_raw[(ratings_raw$Book.Rating != 0), ]
 
-# filtracja rekord√≥w w kt√≥rych u≈ºytkownicy majƒÖ ocenione co najmniej min_nr_of_ratings ksiƒÖ≈ºek
+# filtracja rekordÛw w ktÛrych uøytkownicy majπ ocenione co najmniej min_nr_of_ratings ksiπøek
 unique_user_ids <- as.data.frame(table(ratings_raw$User.ID)) %>% filter(as.numeric(Freq) >= min_nr_of_ratings)
 unique_user_ids <- unique_user_ids[, 1]
-unique_user_ids_length <- length(unique_user_ids) # unique_user_ids zawiera warto≈õci unikalne
+unique_user_ids_length <- length(unique_user_ids) # unique_user_ids zawiera wartoúci unikalne
 
-# losowanie bez zwracania nr_of_users_to_choose u≈ºytkownik√≥w
+# losowanie bez zwracania nr_of_users_to_choose uøytkownikÛw
 samples <- sample(1:unique_user_ids_length, nr_of_users_to_choose, replace = FALSE) # samples zawiera indeksy
-unique_choosed_user_ids <- unique_user_ids[samples] # choosed_user_ids zawiera wybrane warto≈õci unikalne ID u≈ºytkownik√≥w
+unique_choosed_user_ids <- unique_user_ids[samples] # choosed_user_ids zawiera wybrane wartoúci unikalne ID uøytkownikÛw
 ratings <- ratings_raw[ratings_raw$User.ID %in% unique_choosed_user_ids, ]
 
-# przypisanie nowych ID u≈ºytkownik√≥w i ksiƒÖ≈ºek do ratings
+# przypisanie nowych ID uøytkownikÛw i ksiπøek do ratings
 ratings$New.User.ID <- group_indices(ratings, User.ID)
 ratings$New.Book.ID <- group_indices(ratings, ISBN)
 
-# utworzenie macierzy ≈ºadkiej
+# utworzenie macierzy øadkiej
 ratings_sparse = sparseMatrix(as.integer(ratings$New.User.ID), as.integer(ratings$New.Book.ID), x = ratings$Book.Rating)
 colnames(ratings_sparse) = levels(factor(ratings$ISBN))
 rownames(ratings_sparse) = levels(factor(ratings$User.ID))
@@ -57,40 +58,40 @@ ratings_object <- new("realRatingMatrix", data = ratings_sparse)
 # statystyki danych
 # -----------------------------------------------------------------------------------------------------
 
-# histogram liczba ocen - liczba u≈ºytkownik√≥w kt√≥rzy wystawili takƒÖ liczbƒô ocen
-row_counts <- rowCounts(ratings_object)
-hist(row_counts, 
-     main = "Histogram liczba ocen - liczba u≈ºytkwonik√≥w",
-     col = "darkslategray4", 
-     border = "red", 
-     xlab = "liczba ocen",
-     ylab = "liczba u≈ºytkownik√≥w",
-     breaks = seq(min_nr_of_ratings - 1, max(row_counts) + 1, by = 10),
-     xlim = c(min(column_counts) - 0.5, 300)
-)
+# histogram liczba ocen - liczba uøytkownikÛw ktÛrzy wystawili takπ liczbÍ ocen
+# row_counts <- rowCounts(ratings_object)
+# hist(row_counts, 
+#    main = "Histogram liczba ocen - liczba uøytkwonikÛw",
+#     col = "darkslategray4", 
+#     border = "red", 
+#     xlab = "liczba ocen",
+#     ylab = "liczba uøytkownikÛw",
+#     breaks = seq(min_nr_of_ratings - 1, max(row_counts) + 1, by = 10),
+#     xlim = c(min(column_counts) - 0.5, 300)
+#)
 
-# histogram liczba ocen - liczba ksiƒÖ≈ºek, kt√≥re majƒÖ wystawionƒÖ takƒÖ liczbƒô ocen
+# histogram liczba ocen - liczba ksiπøek, ktÛre majπ wystawionπ takπ liczbÍ ocen
 column_counts <- colCounts(ratings_object)
 hist(column_counts, 
-     main = "Histogram liczba ocen - liczba ksiƒÖ≈ºek",
+     main = "Histogram liczba ocen - liczba ksiπøek",
      col = "darkslategray4", 
      border = "red", 
      xlab = "liczba ocen",
-     ylab = "liczba ksiƒÖ≈ºek",
+     ylab = "liczba ksiπøek",
      breaks = seq(min(column_counts) - 0.5, max(column_counts) + 0.5, by = 1),
      xlim = c(min(column_counts) - 0.5, 10.5),
      xaxt = "n"
 )
 axis(side = 1, at = seq(1, 10, 1))
 
-# histogram rozk≈Çadu ocen
+# histogram rozk≥adu ocen
 histogram(getRatings(ratings_object), 
           type = "percent",
           main = "Histogram ocen", 
           col = "darkslategray4", 
           border = "red", 
           xlab = "ocena", 
-          ylab = "% ca≈Ço≈õci", 
+          ylab = "% ca≥oúci", 
           xlim = c(0.5, 10.5), 
           ylim = c(0, 30), 
           breaks = -0.5:(max(getRatings(ratings_object) + 1) - 0.5), 
@@ -115,18 +116,18 @@ histogram(r,
           col = "darkslategray4", 
           border = "red", 
           xlab = "ocena przeskalowana", 
-          ylab = "% ca≈Ço≈õci",
+          ylab = "% ca≥oúci",
           scales = list(x = list(at = floor(min(r)):ceiling(max(r)))), 
           breaks = 10,
           ylim = c(0, 35),
           key = list(
-          corner = c(0, 0.95), 
-          lines = list(col = c("darkslategray4", "green"), lty = 1, lwd = 2), 
-          text = list(c("histogram", "rozk≈Çad normalny"))), 
+            corner = c(0, 0.95), 
+            lines = list(col = c("darkslategray4", "green"), lty = 1, lwd = 2), 
+            text = list(c("histogram", "rozk≥ad normalny"))), 
           panel = function(...){
-          panel.grid(h = 5, v = 10)
-          panel.histogram(...)
-          panel.lines(x, y, col = "green", lwd = 2)
+            panel.grid(h = 5, v = 10)
+            panel.histogram(...)
+            panel.lines(x, y, col = "green", lwd = 2)
           })
 
 normalized_ratings_object_zscore <- normalize(ratings_object, method = "Z-score", row = TRUE)
@@ -140,18 +141,18 @@ histogram(r,
           col = "darkslategray4", 
           border = "red", 
           xlab = "ocena przeskalowana", 
-          ylab = "% ca≈Ço≈õci",
+          ylab = "% ca≥oúci",
           scales = list(x = list(at = floor(min(r)):ceiling(max(r)))), 
           breaks = 10,
           ylim = c(0, 45),
           key = list(
-          corner = c(0, 0.95), 
-          lines = list(col = c("darkslategray4", "green"), lty = 1, lwd = 2), 
-          text = list(c("histogram", "rozk≈Çad normalny"))), 
+            corner = c(0, 0.95), 
+            lines = list(col = c("darkslategray4", "green"), lty = 1, lwd = 2), 
+            text = list(c("histogram", "rozk≥ad normalny"))), 
           panel = function(...){
-          panel.grid(h = 5, v = 10)
-          panel.histogram(...)
-          panel.lines(x, y, col = "green", lwd = 2)
+            panel.grid(h = 5, v = 10)
+            panel.histogram(...)
+            panel.lines(x, y, col = "green", lwd = 2)
           })
 
 # -----------------------------------------------------------------------------------------------------
@@ -185,8 +186,8 @@ for(i in 1:kfold){
 }
 
 # wykresy pudelkowe dla UBCF dla normalizacji danych
-boxplot(ubcf_normzlization_rmse_center, ubcf_normzlization_rmse_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "RMSE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci RMSE dla normalizacji")
-boxplot(ubcf_normzlization_mae_center, ubcf_normzlization_mae_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "MAE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci MAE dla normalizacji")
+boxplot(ubcf_normzlization_rmse_center, ubcf_normzlization_rmse_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "RMSE", col = c("blue", "red"), main = "PorÛwnanie wartoúci RMSE dla normalizacji")
+boxplot(ubcf_normzlization_mae_center, ubcf_normzlization_mae_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "MAE", col = c("blue", "red"), main = "PorÛwnanie wartoúci MAE dla normalizacji")
 
 # normalizacja - "Z-score"
 # testowanie miary podobienstwa "Cosine", "pearson"
@@ -210,12 +211,12 @@ for(i in 1:kfold){
   ubcf_similarity_mae_pearson[i] <- ubcf_similarities_history["pearson"]$pearson@results[[i]]@cm[3]
 }
 
-# wykresy pudelkowe dla UBCF dla miar podobie≈Ñstwa
-boxplot(ubcf_similarity_rmse_cosine, ubcf_similarity_rmse_pearson, at = c(1, 2), names = c("cosine", "pearson"), ylab = "RMSE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci RMSE dla podobie≈Ñstwa")
-boxplot(ubcf_similarity_mae_cosine, ubcf_similarity_mae_pearson, at = c(1, 2), names = c("cosine", "pearson"), ylab = "MAE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci MAE dla podobie≈Ñstwa")
+# wykresy pudelkowe dla UBCF dla miar podobieÒstwa
+boxplot(ubcf_similarity_rmse_cosine, ubcf_similarity_rmse_pearson, at = c(1, 2), names = c("cosine", "pearson"), ylab = "RMSE", col = c("blue", "red"), main = "PorÛwnanie wartoúci RMSE dla podobieÒstwa")
+boxplot(ubcf_similarity_mae_cosine, ubcf_similarity_mae_pearson, at = c(1, 2), names = c("cosine", "pearson"), ylab = "MAE", col = c("blue", "red"), main = "PorÛwnanie wartoúci MAE dla podobieÒstwa")
 
-# normalizacja - "center", podobie≈Ñstwo - "Pearson"
-# testy dla liczby najbli≈ºszych sƒÖsiad√≥w nn
+# normalizacja - "center", podobieÒstwo - "Pearson"
+# testy dla liczby najbliøszych sπsiadÛw nn
 nn <- seq(2, 20, 2)
 ubcf_nn_history <- list()
 for(n in nn){
@@ -234,12 +235,12 @@ for(i in 1:length(nn)){
   }
 }
 
-# wykresy pudelkowe dla UBCF dla r√≥≈ºnej liczby najbli≈ºszych sƒÖsiad√≥w
-boxplot(ubcf_nn_rmse, xlab = "ilo≈õƒá najbli≈ºszych sƒÖsiad√≥w", ylab = "RMSE", names = nn, col = c("blue"), main = "Por√≥wnanie warto≈õci RMSE dla najbli≈ºszych sƒÖsiad√≥w")
-boxplot(ubcf_nn_mae, xlab = "ilo≈õƒá najbli≈ºszych sƒÖsiad√≥w", ylab = "MAE", names = nn, col = c("blue"), main = "Por√≥wnanie warto≈õci MAE dla najbli≈ºszych sƒÖsiad√≥w")
+# wykresy pudelkowe dla UBCF dla rÛønej liczby najbliøszych sπsiadÛw
+boxplot(ubcf_nn_rmse, xlab = "iloúÊ najbliøszych sπsiadÛw", ylab = "RMSE", names = nn, col = c("blue"), main = "PorÛwnanie wartoúci RMSE dla najbliøszych sπsiadÛw")
+boxplot(ubcf_nn_mae, xlab = "iloúÊ najbliøszych sπsiadÛw", ylab = "MAE", names = nn, col = c("blue"), main = "PorÛwnanie wartoúci MAE dla najbliøszych sπsiadÛw")
 
 
-# podsumowanie - normalizacja - "center", podobie≈Ñstwo - "Pearson", nn = 8
+# podsumowanie - normalizacja - "center", podobieÒstwo - "Pearson", nn = 8
 
 
 # -------------------------------------------------- SVDF ---------------------------------------------
@@ -265,8 +266,8 @@ for(i in 1:kfold){
 }
 
 # wykresy pudelkowe dla SVDF dla normalizacji danych
-boxplot(svdf_normzlization_rmse_center, svdf_normzlization_rmse_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "RMSE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci RMSE dla normalizacji")
-boxplot(svdf_normzlization_mae_center, svdf_normzlization_mae_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "MAE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci MAE dla normalizacji")
+boxplot(svdf_normzlization_rmse_center, svdf_normzlization_rmse_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "RMSE", col = c("blue", "red"), main = "PorÛwnanie wartoúci RMSE dla normalizacji")
+boxplot(svdf_normzlization_mae_center, svdf_normzlization_mae_zscore, at = c(1, 2), names = c("center", "Z-score"), ylab = "MAE", col = c("blue", "red"), main = "PorÛwnanie wartoúci MAE dla normalizacji")
 
 # normalizacja - "center"
 # testowanie roznych wartosci latent_factor
@@ -289,12 +290,12 @@ for(i in 1:length(k)){
   }
 }
 
-# wykresy pudelkowe dla SVDF dla r√≥≈ºnej liczby latent_factor
-boxplot(svdf_k_rmse, xlab = "liczba sk≈Çadowych utajonych", ylab = "RMSE", names = k, col = c("blue"), main = "Por√≥wnanie warto≈õci RMSE dla r√≥≈ºnej liczby sk≈Çadowych utajonych")
-boxplot(svdf_k_mae, xlab = "liczba sk≈Çadowych utajonych", ylab = "MAE", names = k, col = c("blue"), main = "Por√≥wnanie warto≈õci MAE dla r√≥≈ºnej liczby sk≈Çadowych utajonych")
+# wykresy pudelkowe dla SVDF dla rÛønej liczby latent_factor
+boxplot(svdf_k_rmse, xlab = "liczba sk≥adowych utajonych", ylab = "RMSE", names = k, col = c("blue"), main = "PorÛwnanie wartoúci RMSE dla rÛønej liczby sk≥adowych utajonych")
+boxplot(svdf_k_mae, xlab = "liczba sk≥adowych utajonych", ylab = "MAE", names = k, col = c("blue"), main = "PorÛwnanie wartoúci MAE dla rÛønej liczby sk≥adowych utajonych")
 
 # normalizacja "Z-score", k = 10
-# testowanie wsp√≥≈Çczynnika szybko≈õci uczenia
+# testowanie wspÛ≥czynnika szybkoúci uczenia
 lambda <- c(5e-4, seq(1e-3, 1e-3*(svd_iters - 1), 1e-3))
 svdf_lambda_history <- list()
 for(i in 1:length(lambda)){
@@ -313,18 +314,31 @@ for(i in 1:length(lambda)){
   }
 }
 
-# wykresy pudelkowe dla SVDF dla r√≥≈ºnych warto≈õci wsp√≥≈Çczynnika szybko≈õci uczenia
-boxplot(svdf_lambda_rmse, xlab = "wsp√≥≈Çczynnik szybko≈õci uczenia", ylab = "RMSE", names = lambda, col = c("blue"), main = "Por√≥wnanie warto≈õci RMSE dla r√≥≈ºnych wsp√≥≈Çczynnik√≥w szybko≈õci uczenia")
-boxplot(svdf_lambda_mae, xlab = "wsp√≥≈Çczynnik szybko≈õci uczenia", ylab = "MAE", names = lambda, col = c("blue"), main = "Por√≥wnanie warto≈õci MAE dla r√≥≈ºnych wsp√≥≈Çczynnik√≥w szybko≈õci uczenia")
+# wykresy pudelkowe dla SVDF dla rÛønych wartoúci wspÛ≥czynnika szybkoúci uczenia
+boxplot(svdf_lambda_rmse, xlab = "wspÛ≥czynnik szybkoúci uczenia", ylab = "RMSE", names = lambda, col = c("blue"), main = "PorÛwnanie wartoúci RMSE dla rÛønych wspÛ≥czynnikÛw szybkoúci uczenia")
+boxplot(svdf_lambda_mae, xlab = "wspÛ≥czynnik szybkoúci uczenia", ylab = "MAE", names = lambda, col = c("blue"), main = "PorÛwnanie wartoúci MAE dla rÛønych wspÛ≥czynnikÛw szybkoúci uczenia")
 
 # podsumowanie - normalizacja "Z-score", k = 10, lambda = 0.001
 
 
-# -------------------------------------------------- por√≥wnanie najlepszych modeli ---------------------------------------------
+# -------------------------------------------------- porÛwnanie najlepszych modeli ---------------------------------------------
 
-boxplot(ubcf_nn_rmse[, 4], svdf_lambda_rmse[, 4], at = c(1, 2), names = c("UBCF", "SVDF"), ylab = "RMSE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci RMSE dla najlepszych modeli")
-boxplot(ubcf_nn_mae[, 2], svdf_lambda_mae[, 2], at = c(1, 2), names = c("UBCF", "SVDF"), ylab = "MAE", col = c("blue", "red"), main = "Por√≥wnanie warto≈õci MAE dla najlepszych modeli")
+boxplot(ubcf_nn_rmse[, 4], svdf_lambda_rmse[, 4], at = c(1, 2), names = c("UBCF", "SVDF"), ylab = "RMSE", col = c("blue", "red"), main = "PorÛwnanie wartoúci RMSE dla najlepszych modeli")
+boxplot(ubcf_nn_mae[, 2], svdf_lambda_mae[, 2], at = c(1, 2), names = c("UBCF", "SVDF"), ylab = "MAE", col = c("blue", "red"), main = "PorÛwnanie wartoúci MAE dla najlepszych modeli")
 
 # -----------------------------------------------------------------------------------------------------
 # binaryzacja problemu i ROC 
 # -----------------------------------------------------------------------------------------------------
+
+N = length(ratings$New.Book.ID)
+n = c(1,seq(1000,N,1000),N)
+#Testowanie z optymalnymi parametrami
+scheme <- evaluationScheme(normalized_ratings_object_zscore, method="split",  k = 1, given = -3, goodRating = 0)
+algorithms <- list( RANDOM = list(name = "RANDOM", param = list(normalize = NULL)),
+                    POPULAR = list(name = "POPULAR", param = list(normalize = NULL)),
+                    UBCF = list(name="UBCF", param = list(method = "Pearson", nn = 8, normalize = NULL)),
+                    SVDF = list(name="SVDF", param = list(k = 10, lambda = 1e-3, normalize = NULL)))
+results <- recommenderlab::evaluate(scheme, algorithms, type = "topNList", n = n)
+results[[3]]@results[[1]]@cm[,7] = results[[3]]@results[[1]]@cm[,7]*max(results[[3]]@results[[1]]@cm[,7])^-1
+results[[3]]@results[[1]]@cm[,8] = results[[3]]@results[[1]]@cm[,8]*max(results[[3]]@results[[1]]@cm[,8])^-1
+recommenderlab::plot(results, "ROC", legend="topleft")
